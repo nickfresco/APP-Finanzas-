@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Mail, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { getTheme } from '@/lib/theme';
 import { Field, PrimaryButton, inputStyle } from '@/components/ui';
@@ -10,6 +10,12 @@ export default function LoginForm() {
   const theme = getTheme(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [callbackReason, setCallbackReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason) setCallbackReason(reason);
+  }, []);
 
   const submit = async () => {
     if (!email.trim()) return;
@@ -30,6 +36,14 @@ export default function LoginForm() {
         </div>
         <h1 style={{ color: theme.text }} className="text-[20px] font-bold mb-1">Mis Finanzas</h1>
 
+        {callbackReason && status !== 'sent' && (
+          <div className="flex items-start gap-2.5 mb-4 p-3" style={{ background: theme.red + '15', borderRadius: 12 }}>
+            <AlertCircle size={16} style={{ color: theme.red }} className="shrink-0 mt-0.5" />
+            <p style={{ color: theme.red }} className="text-[12.5px] leading-relaxed">
+              No se pudo completar el login: {callbackReason}
+            </p>
+          </div>
+        )}
         {status === 'sent' ? (
           <div className="flex items-start gap-2.5 mt-4">
             <CheckCircle2 size={18} style={{ color: theme.green }} className="shrink-0 mt-0.5" />
